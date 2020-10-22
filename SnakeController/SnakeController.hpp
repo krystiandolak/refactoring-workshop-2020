@@ -5,6 +5,7 @@
 
 #include "IEventHandler.hpp"
 #include "SnakeInterface.hpp"
+#include "EventT.hpp"
 
 class Event;
 class IPort;
@@ -36,12 +37,10 @@ public:
     void setFreeLastSegment();
     void nextMoveSnake(Segment& head);
 
-    template<typename T>
-    bool isFoodcolidedWithSnake(T receivedFood);
-
-    template<typename T>
-    void placeNewFood(T receivedFood);
-
+    bool isReceivedFoodcolidedWithSnake(EventT<FoodInd> const& food);
+    bool isRequestedFoodcolidedWithSnake(EventT<FoodResp> const& food);
+    void placeNewFoodInd(EventT<FoodInd> const& food);
+    void placeNewFoodResp(EventT<FoodResp> const& food);
     void clearOldFood();
 
     void receive(std::unique_ptr<Event> e) override;

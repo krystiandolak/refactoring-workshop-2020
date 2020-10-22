@@ -106,8 +106,8 @@ void Controller::nextMoveSnake(Segment& head) {
     m_displayPort.send(std::make_unique<EventT<DisplayInd>>(placeNewHead));
 }
 
-template<typename T>
-bool Controller::isFoodcolidedWithSnake(T receivedFood) {
+bool Controller::isReceivedFoodcolidedWithSnake(EventT<FoodInd> const& food) {
+    auto receivedFood = *food;
     bool requestedFoodCollidedWithSnake = false;
     for (auto const& segment : m_segments) {
         if (segment.x == receivedFood.x and segment.y == receivedFood.y) {
@@ -117,11 +117,34 @@ bool Controller::isFoodcolidedWithSnake(T receivedFood) {
     }
     return requestedFoodCollidedWithSnake;
 }
-template<typename T>
-void Controller::placeNewFood(T receivedFood) {
+
+bool Controller::isRequestedFoodcolidedWithSnake(EventT<FoodResp> const& food) {
+    auto requestedFood = *food;
+    bool requestedFoodCollidedWithSnake = false;
+    for (auto const& segment : m_segments) {
+        if (segment.x == requestedFood.x and segment.y == requestedFood.y) {
+            requestedFoodCollidedWithSnake = true;
+            break;
+        }
+    }
+    return requestedFoodCollidedWithSnake;
+}
+
+
+void Controller::placeNewFoodInd(EventT<FoodInd> const& food) {
+    auto receivedFood = *food;
     DisplayInd placeNewFood;
     placeNewFood.x = receivedFood.x;
     placeNewFood.y = receivedFood.y;
+    placeNewFood.value = Cell_FOOD;
+    m_displayPort.send(std::make_unique<EventT<DisplayInd>>(placeNewFood));
+}
+
+void Controller::placeNewFoodResp(EventT<FoodResp> const& food) {
+    auto requestedFood = *food;
+    DisplayInd placeNewFood;
+    placeNewFood.x = requestedFood.x;
+    placeNewFood.y = requestedFood.y;
     placeNewFood.value = Cell_FOOD;
     m_displayPort.send(std::make_unique<EventT<DisplayInd>>(placeNewFood));
 }
@@ -186,11 +209,11 @@ void Controller::receive(std::unique_ptr<Event> e)
             try {
                 auto receivedFood = *dynamic_cast<EventT<FoodInd> const&>(*e);
 
-                if (isFoodcolidedWithSnake(receivedFood)) {
+                if (isReceivedFoodcolidedWithSnake(receivedFood)) {
                     m_foodPort.send(std::make_unique<EventT<FoodReq>>());
                 } else {
                     clearOldFood();
-                    placeNewFood(receivedFood);
+                    placeNewFoodInd(receivedFood);
                 }
 
                 m_foodPosition = std::make_pair(receivedFood.x, receivedFood.y);
@@ -199,10 +222,10 @@ void Controller::receive(std::unique_ptr<Event> e)
                 try {
                     auto requestedFood = *dynamic_cast<EventT<FoodResp> const&>(*e);
 
-                    if (isFoodcolidedWithSnake(requestedFood)) {
+                    if (isRequestedFoodcolidedWithSnake(requestedFood)) {
                         m_foodPort.send(std::make_unique<EventT<FoodReq>>());
                     } else {
-                        placeNewFood(requestedFood);
+                        placeNewFoodResp(requestedFood);
                     }
 
                     m_foodPosition = std::make_pair(requestedFood.x, requestedFood.y);
