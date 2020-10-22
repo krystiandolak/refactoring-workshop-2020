@@ -23,11 +23,26 @@ struct UnexpectedEventException : std::runtime_error
 
 class Controller : public IEventHandler
 {
+    struct Segment;
 public:
     Controller(IPort& p_displayPort, IPort& p_foodPort, IPort& p_scorePort, std::string const& p_config);
 
     Controller(Controller const& p_rhs) = delete;
     Controller& operator=(Controller const& p_rhs) = delete;
+
+    void isGameLost(Segment& head, bool& isLost);
+    void isHeadOnFruit();
+    void snakeOutOfMap(bool& isLost);
+    void setFreeLastSegment();
+    void nextMoveSnake(Segment& head);
+
+    template<typename T>
+    bool isFoodcolidedWithSnake(T receivedFood);
+
+    template<typename T>
+    void placeNewFood(T receivedFood);
+
+    void clearOldFood();
 
     void receive(std::unique_ptr<Event> e) override;
 

@@ -42,7 +42,7 @@ struct DisplayInd
     Cell value;
 };
 
-struct FoodInd
+struct FoodInd 
 {
     static constexpr std::uint32_t MESSAGE_ID = 0x40;
 
@@ -55,7 +55,7 @@ struct FoodReq
     static constexpr std::uint32_t MESSAGE_ID = 0x41;
 };
 
-struct FoodResp
+struct FoodResp 
 {
     static constexpr std::uint32_t MESSAGE_ID = 0x42;
 
